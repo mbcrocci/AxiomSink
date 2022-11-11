@@ -1,10 +1,10 @@
-using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.PeriodicBatching;
-using Serilog.Configuration;
 using AxiomNet;
 using Serilog.Core;
 using Serilog.Debugging;
+
+namespace Serilog.Sinks.Axiom;
 
 public class AxiomSink : IBatchedLogEventSink, IDisposable
 {
@@ -29,7 +29,7 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
         _dataset = dataset;
     }
 
-    public static ILogEventSink Create(string token, string orgID, string dataset)
+    public static ILogEventSink Create(string token, string orgID, string dataset, AxiomConfiguration config)
     {
         var sink = new AxiomSink(token, orgID, dataset);
 
@@ -68,12 +68,12 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
     }
 }
 
-public static class AxiomSinkExtensions
-{
-    public static LoggerConfiguration Axiom(
-        this LoggerSinkConfiguration loggerConfiguration,
-        string token, string orgID, string dataset)
-    {
-        return loggerConfiguration.Sink(AxiomSink.Create(token, orgID, dataset));
-    }
-}
+// public static class AxiomSinkExtensions
+// {
+//     public static LoggerConfiguration Axiom(
+//         this LoggerSinkConfiguration loggerConfiguration,
+//         string token, string orgID, string dataset)
+//     {
+//         return loggerConfiguration.Sink(AxiomSink.Create(token, orgID, dataset));
+//     }
+// }

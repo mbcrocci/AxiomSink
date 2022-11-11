@@ -5,6 +5,8 @@ using System.Text.Encodings.Web;
 using System.Text;
 using Serilog.Events;
 
+namespace Serilog.Sinks.Axiom;
+
 public class LogFormatter
 {
     private static readonly JsonFormatter formatter = new JsonFormatter(renderMessage: true);
@@ -59,6 +61,7 @@ public class LogFormatter
         RenameKey(dict, "Level", "level");
         dict["level"] = FixLevel(dict["level"].ToString() ?? "");
 
+        RenameKey(dict, "Application", "logger");
         RenameKey(dict, "Timestamp", "timestamp");
         RenameKey(dict, "RenderedMessage", "msg");
         RenameKey(dict, "Exception", "error");
@@ -66,11 +69,14 @@ public class LogFormatter
         RemoveKey(dict, "MessageTemplate");
         RemoveKey(dict, "Renderings");
         RemoveKey(dict, "Properties");
+        
+        foreach (var key in dict.Keys)
+            RenameKey(dict, key, key.ToLower());
 
         return dict;
     }
 
-    private void RenameKey<TKey, TValue>(IDictionary<TKey, TValue> dict,
+    public void RenameKey<TKey, TValue>(IDictionary<TKey, TValue> dict,
                                            TKey oldKey, TKey newKey)
     {
         if (dict.TryGetValue(oldKey, out TValue value))
@@ -80,5 +86,5 @@ public class LogFormatter
         }
     }
 
-    private void RemoveKey<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey key) => dict.Remove(key);
+    public void RemoveKey<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey key) => dict.Remove(key);
 }
