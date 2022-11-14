@@ -48,7 +48,9 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
         {
             if (!batch.Any()) return;
 
-            List<object> events = batch.Select(_formatter.FormatMessage).ToList();
+            var events = batch
+                .Select(_formatter.FormatMessage)
+                .ToList();
 
             await _axiomClient.Datasets
                 .IngestEvents(_dataset, events, _options, CancellationToken.None)
@@ -56,16 +58,11 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
         }
         catch (Exception e)
         {
-            OnException(e);
+            SelfLog.WriteLine("{0}", e.Message);
         }
     }
 
     public Task OnEmptyBatchAsync() => Task.CompletedTask;
-
-    private void OnException(Exception e)
-    {
-        SelfLog.WriteLine("{0}", e.Message);
-    }
 }
 
 // public static class AxiomSinkExtensions

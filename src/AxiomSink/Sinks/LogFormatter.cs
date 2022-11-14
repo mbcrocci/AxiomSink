@@ -70,7 +70,7 @@ public class LogFormatter
         RemoveKey(dict, "Renderings");
         RemoveKey(dict, "Properties");
         
-        foreach (var key in dict.Keys)
+        foreach (var key in dict.Keys.ToList())
             RenameKey(dict, key, key.ToLower());
 
         return dict;

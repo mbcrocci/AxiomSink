@@ -1,4 +1,4 @@
-namespace AxiomSink.Tests;
+namespace Serilog.Sinks.Axiom.Tests;
 
 public class FormatterTests
 {
