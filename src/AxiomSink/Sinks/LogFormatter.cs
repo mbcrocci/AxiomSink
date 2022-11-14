@@ -17,35 +17,37 @@ public class LogFormatter
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    private string ExtractProperties(string s)
+    private string RemoveProperties(string s) => s.Replace("Properties.", "");
+
+    public string FixLevel(string level) => level.ToLower() switch
     {
-        var dict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(s) ?? new();
-        if (!dict.TryGetValue("Properties", out JsonElement props))
+        "warning" => "warn",
+        "information" => "info",
+        _ => level.ToLower(),
+    };
+
+    public Dictionary<string, object> ParseProperty(JsonProperty prop)
+    {
+        var dict = new Dictionary<string, object>();
+
+        if (prop.Value.ValueKind == JsonValueKind.Object)
         {
-            return s;
+            foreach (var property in prop.Value.EnumerateObject())
+            {
+                var innerDict = ParseProperty(property);
+                foreach (var (k, v) in innerDict)
+                {
+                    var key = RemoveProperties($"{prop.Name}.{k}");
+                    dict[key] = v;
+                }
+            }
+        }
+        else
+        {
+            dict[prop.Name] = prop.Value.Clone();
         }
 
-        var dict2 = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(props) ?? new();
-        foreach (var (key, val) in dict2)
-        {
-            dict[key] = val;
-        }
-
-        return JsonSerializer.Serialize(dict);
-    }
-
-    public string FixLevel(string level)
-    {
-        if (string.IsNullOrEmpty(level)) return "info";
-
-        var l = level.ToLower();
-
-        return l switch
-        {
-            "warning" => "warn",
-            "information" => "info",
-            _ => l,
-        };
+        return dict;
     }
 
     public object FormatMessage(LogEvent logEvent)
@@ -55,8 +57,21 @@ public class LogFormatter
 
         formatter.Format(logEvent, writer);
 
+        var msg = writer.ToString();
+        var dict = new Dictionary<string, object>();
 
-        var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(ExtractProperties(writer.ToString())) ?? new();
+        using var doc = JsonDocument.Parse(msg);
+
+        foreach (var property in doc.RootElement.EnumerateObject())
+        {
+            foreach (var (k, v) in ParseProperty(property))
+            {
+                dict[k] = v;
+            }
+        }
+
+
+        // var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(ExtractProperties(writer.ToString())) ?? new();
 
         RenameKey(dict, "Level", "level");
         dict["level"] = FixLevel(dict["level"].ToString() ?? "");
@@ -69,9 +84,6 @@ public class LogFormatter
         RemoveKey(dict, "MessageTemplate");
         RemoveKey(dict, "Renderings");
         RemoveKey(dict, "Properties");
-        
-        foreach (var key in dict.Keys.ToList())
-            RenameKey(dict, key, key.ToLower());
 
         return dict;
     }

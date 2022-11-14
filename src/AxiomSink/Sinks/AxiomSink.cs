@@ -58,7 +58,7 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
         }
         catch (Exception e)
         {
-            SelfLog.WriteLine("{0}", e.Message);
+            SelfLog.WriteLine("{0}", e);
         }
     }
 
