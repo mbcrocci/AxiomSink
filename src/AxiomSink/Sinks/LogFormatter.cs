@@ -96,10 +96,23 @@ public class LogFormatter
         RemoveKey(dict, "Renderings");
         RemoveKey(dict, "Properties");
 
-        foreach (var r in Removals) RemoveKey(dict, r);
-        foreach (var (k1, k2) in Renames) RenameKey(dict, k1, k2);
+        ApplyRemovals(dict);
+        ApplyRenames(dict);
 
         return dict;
+    }
+
+    public void ApplyRemovals(Dictionary<string, object> dict)
+    {
+        foreach (var k in dict.Keys.ToList())
+            foreach (var rk in Removals)
+                if (k.Contains(rk))
+                    RemoveKey(dict, k);
+    }
+
+    public void ApplyRenames(Dictionary<string, object> dict)
+    {
+        foreach (var (k1, k2) in Renames) RenameKey(dict, k1, k2);
     }
 
     public void RenameKey<TKey, TValue>(IDictionary<TKey, TValue> dict,
