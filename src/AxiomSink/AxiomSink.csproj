@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net5.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackageId>AxiomSink</PackageId>
-        <Version>0.2.5</Version>
+        <Version>0.2.6</Version>
         <Authors>Maurizio Crocci</Authors>
     </PropertyGroup>
 
