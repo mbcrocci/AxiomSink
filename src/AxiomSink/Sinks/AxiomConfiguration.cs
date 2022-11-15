@@ -2,16 +2,14 @@ namespace Serilog.Sinks.Axiom;
 
 public class AxiomConfiguration
 {
-    public string Token { get; set; }
-    public string OrgID { get; set; }
-    public string Dataset { get; set; }
+    public List<string> Removals { get; set; } = new();
+    public Dictionary<string, string> Renames { get; set; } = new();
 
-    public AxiomConfiguration() : this("", "", "") { }
+    public AxiomConfiguration() { }
 
-    public AxiomConfiguration(string token, string orgID, string dataset)
+    public AxiomConfiguration(List<string> removes, Dictionary<string, string> renames)
     {
-        Token = token;
-        OrgID = orgID;
-        Dataset = dataset;
+        Removals = removes;
+        Renames = renames;
     }
 }

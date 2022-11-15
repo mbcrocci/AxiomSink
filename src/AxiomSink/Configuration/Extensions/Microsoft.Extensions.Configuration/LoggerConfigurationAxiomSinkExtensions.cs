@@ -12,8 +12,8 @@ public static class LoggerConfigurationAxiomSinkExtensions
         string token,
         string orgID,
         string dataset,
-        AxiomConfiguration configuration = null,
-        IConfigurationSection configurationSection = null,
+        AxiomConfiguration? configuration = null,
+        IConfigurationSection? configurationSection = null,
         LogEventLevel logLevel = LevelAlias.Minimum)
     {
         var config = ApplyMicrosoftExtensionsConfiguration.ConfigureAxiomConfiguration(configuration, configurationSection);

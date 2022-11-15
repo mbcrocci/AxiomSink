@@ -21,17 +21,20 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
         TimestampField = "timestamp",
     };
 
-    public AxiomSink(string token, string orgID, string dataset)
+    public AxiomSink(string token, string orgID, string dataset, AxiomConfiguration? config = null)
     {
         HttpClient client = new();
 
         _axiomClient = new Client(client, accessToken: token, organisationId: orgID);
         _dataset = dataset;
+        
+        if (config != null)
+            _formatter = new LogFormatter(config.Removals, config.Renames);
     }
 
     public static ILogEventSink Create(string token, string orgID, string dataset, AxiomConfiguration config)
     {
-        var sink = new AxiomSink(token, orgID, dataset);
+        var sink = new AxiomSink(token, orgID, dataset, config);
 
         return new PeriodicBatchingSink(sink, new PeriodicBatchingSinkOptions
         {
