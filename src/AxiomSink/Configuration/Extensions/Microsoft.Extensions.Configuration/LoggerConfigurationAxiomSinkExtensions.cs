@@ -9,18 +9,17 @@ public static class LoggerConfigurationAxiomSinkExtensions
 {
     public static LoggerConfiguration Axiom(
         this LoggerSinkConfiguration loggerConfiguration,
-        string token,
-        string orgID,
-        string dataset,
+        bool enabled = true,
+        string token = "",
+        string orgID = "",
+        string dataset = "",
         AxiomConfiguration? configuration = null,
         IConfigurationSection? configurationSection = null,
         LogEventLevel logLevel = LevelAlias.Minimum)
     {
         var config = ApplyMicrosoftExtensionsConfiguration.ConfigureAxiomConfiguration(configuration, configurationSection);
-        var sink = AxiomSink.Create(token, orgID, dataset, config);
+        var sink = AxiomSink.Create(enabled, token, orgID, dataset, config);
 
         return loggerConfiguration.Sink(sink, logLevel);
-
     }
-
 }

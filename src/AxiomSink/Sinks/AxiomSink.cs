@@ -8,8 +8,10 @@ namespace Serilog.Sinks.Axiom;
 
 public class AxiomSink : IBatchedLogEventSink, IDisposable
 {
-    private readonly Client _axiomClient;
+    private readonly bool _enabled;
     private readonly string _dataset;
+
+    private Client? _axiomClient;
 
     private static readonly TimeSpan DefaultBatchPeriod = TimeSpan.FromSeconds(2);
     private const int DefaultBatchSizeLimit = 50;
@@ -21,20 +23,34 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
         TimestampField = "timestamp",
     };
 
-    public AxiomSink(string token, string orgID, string dataset, AxiomConfiguration? config = null)
+    public AxiomSink(
+        bool enabled,
+        string token,
+        string orgID,
+        string dataset,
+        AxiomConfiguration? config = null)
     {
-        HttpClient client = new();
+        _enabled = enabled;
+        if (_enabled)
+        {
+            HttpClient client = new();
+            _axiomClient = new Client(client, accessToken: token, organisationId: orgID);
+        }
 
-        _axiomClient = new Client(client, accessToken: token, organisationId: orgID);
         _dataset = dataset;
-        
+
         if (config != null)
             _formatter = new LogFormatter(config.Removals, config.Renames);
     }
 
-    public static ILogEventSink Create(string token, string orgID, string dataset, AxiomConfiguration config)
+    public static ILogEventSink Create(
+        bool enabled,
+        string token,
+        string orgID,
+        string dataset,
+        AxiomConfiguration config)
     {
-        var sink = new AxiomSink(token, orgID, dataset, config);
+        var sink = new AxiomSink(enabled, token, orgID, dataset, config);
 
         return new PeriodicBatchingSink(sink, new PeriodicBatchingSinkOptions
         {
@@ -49,6 +65,8 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
     {
         try
         {
+            if (!_enabled || _axiomClient == null) return;
+
             if (!batch.Any()) return;
 
             var events = batch
@@ -67,13 +85,3 @@ public class AxiomSink : IBatchedLogEventSink, IDisposable
 
     public Task OnEmptyBatchAsync() => Task.CompletedTask;
 }
-
-// public static class AxiomSinkExtensions
-// {
-//     public static LoggerConfiguration Axiom(
-//         this LoggerSinkConfiguration loggerConfiguration,
-//         string token, string orgID, string dataset)
-//     {
-//         return loggerConfiguration.Sink(AxiomSink.Create(token, orgID, dataset));
-//     }
-// }
